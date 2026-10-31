@@ -1,6 +1,10 @@
 import { mkdir, cp, rm } from 'node:fs/promises';
-const out = new URL('../dist/', import.meta.url);
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+const root = fileURLToPath(new URL('../', import.meta.url));
+const out = path.resolve(root, 'dist');
+if (path.dirname(out) !== path.resolve(root)) throw Error('Invalid output directory');
 await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });
-for (const f of ['index.html', 'styles.css', 'app.js', 'resume.html', 'assets', 'Jacob_Bacus.jpg', 'SeaTurtleBrazil.jpg']) await cp(new URL('../'+f, import.meta.url), new URL(f, out), { recursive: true });
+for (const f of ['index.html', 'styles.css', 'app.js', 'content.js', 'resume.html', 'assets']) await cp(path.join(root,f), path.join(out,f), { recursive: true });
 console.log('Built static site to dist/');

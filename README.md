@@ -1,37 +1,21 @@
-# Jacob Bacus — A Developer’s Adventure
+# Jacob Bacus portfolio
 
-A Skyrim-inspired personal portfolio built with semantic HTML, CSS, and vanilla JavaScript. No runtime dependencies, accounts, API keys, or build framework.
+A static portfolio with a Skyrim-style directional menu. HTML, CSS, and vanilla JavaScript; no runtime dependencies.
 
-## Run locally
+## Development
 
-```sh
-npm run dev
-```
+Run `npm run dev` and open http://127.0.0.1:4173. Run `npm run check` for JavaScript syntax and `npm run build` for the static `dist/` output. Render Static Site settings: build command `npm run build`, publish directory `dist`.
 
-Open http://127.0.0.1:4173. `npm run check` validates JavaScript syntax; `npm run build` creates the deployable `dist/` folder. Node 18+ is sufficient.
+## Structure
 
-## Navigation
+- `content.js`: resume-grounded experience and project data.
+- `app.js`: selectors, shaped constellations, radial hover, animated navigation, and ambient motion.
+- `styles.css`: responsive layout and visual styling.
+- `assets/Jacob-Bacus-Resume.pdf`: unchanged one-page recruiting resume. Includes the contact details in the original PDF.
+- `assets/mountains.png`: generated mountain panorama based on the supplied landscape reference.
 
-- **Skills / Experience:** choose Klaviyo, DALI, or P1, then a star for each accomplishment.
-- **Inventory:** filter and inspect eight projects, with original SVG relic illustrations and source/demo links.
-- **Magic:** technical skills, coursework, interests, biography, and two optional Easter eggs.
-- **Map:** drag to pan, use zoom and recenter controls, or use the ordinary text links underneath.
-- Arrow keys select a home-menu direction; Enter opens it. Escape returns home. J opens the quick professional summary. Dialogs support Escape and focus trapping through native HTML dialog behavior.
-- Motion respects the OS setting and can be toggled. Touch and keyboard users can use standard links/buttons. The resume works without JavaScript; printing requires JavaScript only for the convenience button (browser Print also works).
+Experience uses a separate starfield, with Klaviyo flag, DALI mustache, and P1 hard-hat constellations. Projects are left aligned; Skills & Interests selectors are right aligned. More is a plain list of links. Resume opens an embedded PDF with direct-open and download alternatives. Native browser PDF support varies on phones.
 
-## Content & assets
+Arrow keys select a home direction; Enter follows the focused link. Escape returns home. Every inner section has a top Back link. Reduced motion follows the system setting and can also be changed under More. Legacy inventory/magic/map hashes remain supported.
 
-Edit `roles`, `projects`, and `spellContent` in `app.js`; keep `resume.html` in sync. Do not treat fantasy flavor text as additional professional credentials.
-
-Sources: the 2026 recruiting-cycle Master Resume and its linked project destinations, the connected jbacus1 GitHub account and public repositories, and the original site. LinkedIn blocked automated retrieval; the verified profile URL is linked, but no unverified LinkedIn claims were added. No private repository code, personal phone number, application records, or transcript is included in the site.
-
-- `assets/northern-realm.png`: original AI-generated landscape for this site; no game art or music copied.
-- `assets/mark.svg` and project relic/map graphics: original code-native artwork.
-- `Jacob_Bacus.jpg`: senior-year portrait retained from the original repository.
-- `SeaTurtleBrazil.jpg`: original repository’s sea turtle, preserved as a lazy-loaded Easter egg.
-- `assets/speech-check.jpg`: local Fun Stuff meme, shown only when the visitor explicitly opens it.
-- Cormorant Garamond and Inter load from Google Fonts, with system fallbacks when offline.
-
-## Hosting
-
-This is a static site. The repository root works on GitHub Pages, with the existing `CNAME` preserved. For a Render Static Site use build command `npm run build` and publish directory `dist`. Hash-based navigation does not require rewrite rules. No server process is required in production. Hosting and DNS have not been changed by this implementation.
+Content comes from the 2026 recruiting resume and verified project/GitHub links. LinkedIn automated retrieval was blocked, so it is linked without adding unverified profile claims. No hosting or DNS settings are changed by the build. The existing GitHub Pages deployment uses the gh-pages branch.
