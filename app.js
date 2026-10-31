@@ -1,74 +1,158 @@
-const $ = (s, root = document) => root.querySelector(s);
-const $$ = (s, root = document) => [...root.querySelectorAll(s)];
-const roles = [
-  { name:'Klaviyo', role:'Software Engineering Intern', period:'June — August 2026 · Boston, MA', title:'The systems builder', stars:[
-    ['Account activity','Scoped and developed a new system for auditing account activity, used by customer support and developers 1,000+ times monthly.'],
-    ['Agentic filtering','Contributed agentic log filtering to a project providing AI support to customers analyzing their account activity.'],
-    ['Developer tools','Created custom AI tools, including skills and workflow extensions, to help accelerate developers at Klaviyo.'] ] },
-  { name:'DALI Lab', role:'AR/VR & Game Design Domain Lead · Fullstack Developer', period:'February 2025 — present · Hanover, NH', title:'The world builder', stars:[
-    ['Domain leadership','As AR/VR & Game Design Domain Lead since April 2026, manage developers in a core lab pillar across 10 active project teams.'],
-    ['Mentorship','Direct mentorship, developer experience, and project delivery initiatives while contributing to development for company partners.'],
-    ['AI education','Created an AI-first education platform where educators build courses with LLM integrations, including a course design agent.'],
-    ['AI literacy','Developed an AI literacy platform for the Dartmouth Computer Science Department, including LLM chatbot explanations.'],
-    ['Museum experience','Developed an admin interface and hardware code for an eye-tracking exhibit at the Salvador Dalí Museum in St. Petersburg, Florida.'],
-    ['Wearable worlds','Designed wearable prototypes using sensors, LEDs, and textiles to create garments that react to the environment.'] ] },
-  { name:'P1 Construction', role:'Software Engineer · previously Software Engineer Intern', period:'March 2025 — June 2026 · Lenexa, KS / remote', title:'The toolsmith', stars:[
-    ['Revit automation','Built a suite of custom Revit tools to help Virtual Design and Construction workers automate part placement and alteration.'],
-    ['Designer feedback','Worked directly with designers to develop and iterate on features, reducing friction through intuitive interfaces.'],
-    ['Shared foundations','Maintained and updated the custom Revit tools codebase, including a refactor to a shared plugin structure.'],
-    ['API integrations','Helped update company web services with strong API contracts and custom Revit data integrations.'],
-    ['Built to last','Tested and documented tools to support longevity and future development; added functionality informed by usage data and feedback.'] ] }
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const { roles, projects } = window.portfolio;
+const reducedQuery = matchMedia('(prefers-reduced-motion: reduce)');
+let reduced = reducedQuery.matches;
+try { reduced = localStorage.getItem('portfolio-motion') === 'off' || reduced; } catch {}
+function updateMotion() {
+  document.body.classList.toggle('reduced-motion', reduced);
+  $('#motion').setAttribute('aria-pressed', reduced);
+  $('#motion').textContent = reduced ? 'Enable motion' : 'Reduce motion';
+}
+$('#motion').onclick = () => { reduced = !reduced; updateMotion(); try { localStorage.setItem('portfolio-motion', reduced ? 'off' : 'on'); } catch {} };
+reducedQuery.addEventListener('change', e => { reduced = e.matches; updateMotion(); });
+updateMotion();
+
+// Named silhouettes with decorative stars along their contours. Only achievement stars are interactive.
+const shapes = [
+  { path:'M190 110 L520 110 L415 225 L520 340 L190 340 Z', points:[[190,110],[415,225],[190,340]], decoration:[[280,110],[400,110],[520,110],[467,168],[467,282],[520,340],[400,340],[280,340],[190,225]] },
+  { path:'M78 125 C80 260 185 284 284 222 C314 202 334 217 350 232 C366 217 386 202 416 222 C515 284 620 260 622 125 C647 275 551 358 443 305 C402 286 373 270 350 264 C327 270 298 286 257 305 C149 358 53 275 78 125 Z', points:[[78,125],[190,268],[310,218],[390,218],[510,268],[622,125]], decoration:[[92,226],[135,281],[257,305],[350,264],[443,305],[565,281],[608,226]] },
+  { path:'M145 300 L165 300 C165 205 216 144 305 132 L305 105 L395 105 L395 132 C484 144 535 205 535 300 L555 300 L555 335 Q350 365 145 335 Z M305 132 L305 278 M395 132 L395 278 M165 300 Q350 325 535 300 M215 278 C215 220 238 183 270 167 M485 278 C485 220 462 183 430 167', points:[[145,300],[230,164],[350,105],[470,164],[555,335]], decoration:[[165,247],[305,132],[395,132],[535,247],[350,350],[305,278],[395,278]] }
 ];
-const projects = [
-  {name:'Twigby',kind:'ai',icon:'✧',type:'AI education platform',date:'2026',stack:'LangGraph · Fullstack',relic:'book',description:'A course-building companion for educators bringing AI into everyday coursework.',bullets:['Built a block-based system for custom courses.','Created a LangGraph agent that designs and edits full courses autonomously.','Launched through DALI Lab, January–June 2026.'],url:'https://twigby.org/',link:'Visit Twigby'},
-  {name:'GroupTrip.ai',kind:'ai',icon:'⌖',type:'Collaborative trip planner',date:'2026',stack:'React · TypeScript · MongoDB',relic:'compass',description:'For the group chat that says “we should take a trip” and then actually needs to plan one.',bullets:['Integrated an agent that finds and suggests real flights, activities, and hotels.','Built trip chat, group polls, shared finances, an interactive map, and exports.','Developed February–March 2026.'],url:'https://project-grouptrip-ai-lx69.onrender.com/',link:'Explore the app'},
-  {name:'Creative Navigator',kind:'ai',icon:'☽',type:'AI classroom assistant',date:'2025',stack:'React · Supabase · RAG',relic:'orb',description:'An audio-journaling assistant developed with a University of Kansas professor, shaped around real classroom needs.',bullets:['Led user interviews to define features and establish the MVP.','Used serverless functions and a Supabase database to store conversations.','Integrated LLMs and retrieval-augmented generation.'],url:'mailto:jacobcharlesbacus@gmail.com?subject=Creative%20Navigator%20demo',link:'Ask me for a demo'},
-  {name:'Dalí Museum Exhibit',kind:'systems',icon:'◉',type:'Eye-tracking installation',date:'2025',stack:'Tobii Pro Nano · Hardware',relic:'eye',description:'An interactive exhibit exploring how people look at art—and how comments influence what they see.',bullets:['Tracked eye movement as visitors viewed artwork.','Built an administration dashboard to maintain the exhibit.','Developed research workflows for museum curators.'],url:'https://www.stpetersburg.usf.edu/news/2026/eye-tracking-research-explores-art-appreciation-at-the-dali-museum.aspx',link:'Read about the research'},
-  {name:'Tiny Search Engine',kind:'systems',icon:'◇',type:'Crawler · indexer · querier',date:'2025',stack:'C · Hashtables · BFS',relic:'crystal',description:'A search engine built from the foundations: discover pages, build an inverted index, and return ranked results.',bullets:['Modular crawler, indexer, and querier architecture.','Breadth-first crawling with URL deduplication.','Normalized text processing and Boolean query support.'],url:'https://github.com/jbacus1/Tiny-Search-Engine',link:'Inspect the source'},
-  {name:'Survival Shooter',kind:'games',icon:'⚔',type:'3D arcade shooter',date:'2025',stack:'Unity · C#',relic:'sword',description:'Endless waves. Random power-ups. A very reasonable excuse to call playing games “testing.”',bullets:['Extended a Unity tutorial with power-ups, scaling difficulty, and varied enemies.','Worked with animation controllers and particle systems.','Built a third-person arcade experience with visuals and audio.'],url:'https://github.com/jbacus1/Survival-Shooter',link:'Inspect the source'},
-  {name:'Multiplayer Dungeon',kind:'games',icon:'♜',type:'Networked dungeon game',date:'2025',stack:'C · UDP · Client/server',relic:'sword',description:'A dungeon for 26 players and one spectator. Finding the gold is easier than agreeing on a network protocol.',bullets:['Built with a three-person team using UDP client/server architecture.','Engineered dynamic visibility and in-game event handling.','Implemented network protocols for multiplayer interactions.'],url:'https://github.com/jbacus1/Nuggets',link:'Enter the repository'},
-  {name:'Gradient-Domain Blending',kind:'systems',icon:'◈',type:'Seamless image compositing',date:'2024',stack:'Sparse matrices · LSQR',relic:'crystal',description:'A copy-and-paste tool that makes two images belong together using the mathematics of their gradients.',bullets:['Used least-squares optimization to minimize pixel intensity differences.','Applied sparse matrix representation and the LSQR algorithm.','Implemented scalable, seamless source-to-background blending.'],url:'https://github.com/jbacus1/Image-Paste-with-Poisson-Blending',link:'Inspect the source'}
-];
-let roleIndex=0,starIndex=0,filter='all',projectIndex=0;
-const coordinates=[[22,60],[41,39],[59,57],[75,27],[80,73],[47,78]];
-function renderRole(index){roleIndex=index;starIndex=0;$$('.role-tabs button').forEach((b,i)=>b.setAttribute('aria-pressed',i===index));const r=roles[index];$('#constellation-name').textContent=r.title;const points=coordinates.slice(0,r.stars.length);$('#star-lines').innerHTML=points.slice(1).map((p,i)=>`<line class="star-line" x1="${points[i][0]*7}" y1="${points[i][1]*4.4}" x2="${p[0]*7}" y2="${p[1]*4.4}"/>`).join('')+(points.length>3?`<line class="star-line" x1="${points[1][0]*7}" y1="${points[1][1]*4.4}" x2="${points[points.length-1][0]*7}" y2="${points[points.length-1][1]*4.4}"/>`:'');$('#star-nodes').innerHTML=r.stars.map((s,i)=>`<button class="star-node" style="left:${points[i][0]}%;top:${points[i][1]}%" data-star="${i}" aria-pressed="${i===0}" aria-label="${s[0]}"><span class="star" aria-hidden="true"></span><small>${s[0]}</small></button>`).join('');$$('[data-star]').forEach(b=>b.addEventListener('click',()=>renderStar(Number(b.dataset.star))));renderStar(0);}
-function renderStar(index){const r=roles[roleIndex];starIndex=(index+r.stars.length)%r.stars.length;const s=r.stars[starIndex];$$('[data-star]').forEach((b,i)=>b.setAttribute('aria-pressed',i===starIndex));$('#experience-detail').innerHTML=`<p class="eyebrow">${r.name} · ACHIEVEMENT ${String(starIndex+1).padStart(2,'0')}</p><h2>${s[0]}</h2><p class="role">${r.role}</p><p class="period">${r.period}</p><p class="achievement">${s[1]}</p><p class="counter">${starIndex+1} / ${r.stars.length} STAR IN THIS CONSTELLATION</p><div class="star-nav"><button data-next="-1" aria-label="Previous achievement">←</button><button data-next="1" aria-label="Next achievement">→</button></div>`;$$('[data-next]').forEach(b=>b.addEventListener('click',()=>{const dir=Number(b.dataset.next);renderStar(starIndex+dir);$(`[data-next="${dir}"]`).focus({preventScroll:true});}));}
-$('.role-tabs').innerHTML=roles.map((r,i)=>`<button data-role="${i}" aria-pressed="${i===0}">${r.name}</button>`).join('');$$('[data-role]').forEach(b=>b.addEventListener('click',()=>renderRole(Number(b.dataset.role))));renderRole(0);
-const relicPaths={book:'<path d="M35 45 95 27 155 45v98l-60 20-60-20Z" fill="#1b2935"/><path d="m35 45 60 20 60-20M95 65v98M44 56l42 14v78l-42-14Zm60 14 42-14v78l-42 14Z"/><path d="m63 82 9 15-9 15-9-15Zm55 2 17-6m-17 18 17-6m-17 18 17-6"/>',compass:'<circle cx="95" cy="95" r="62" fill="#13242e"/><circle cx="95" cy="95" r="52"/><path d="m95 22 5 18H90ZM95 168l5-18H90ZM22 95l18-5v10ZM168 95l-18-5v10Z"/><path d="m119 52-15 54-33 32 15-54Z" fill="#7292a2"/><path d="m95 95 24-43-15 54Z" fill="#dde8e4"/><circle cx="95" cy="95" r="5"/>',orb:'<circle cx="95" cy="85" r="53" fill="#294152"/><ellipse cx="95" cy="85" rx="25" ry="53"/><ellipse cx="95" cy="85" rx="53" ry="21"/><path d="M67 133v18l-17 12h90l-17-12v-18M75 64l19 6 25-16-9 39-23 11-24-12Z"/><path d="M95 20v-9m0 148v17M30 85H15m145 0h15"/>',eye:'<path d="M15 94Q95 5 175 94 95 180 15 94Z" fill="#1c3343"/><circle cx="95" cy="94" r="36"/><circle cx="95" cy="94" r="18" fill="#a3c5cc"/><path d="M95 15v20M95 155v20M35 33l15 19m90 0 15-19"/>',crystal:'<path d="m95 12 48 48-13 80-35 38-35-38-13-80Z" fill="#244354"/><path d="m95 12 20 60-20 106-20-106ZM47 60l28 12 40 0 28-12M60 140l35-15 35 15M75 72l20 53 20-53"/><path d="m95 12-20 60-28-12Z" fill="#7492a2"/>',sword:'<path d="m117 13 17 8-10 68-38 46-12-9 27-52Z" fill="#7b949f"/><path d="m117 13-7 70-30 47M60 109l43 32-8 10-44-33Z"/><path d="m70 129 12 9-22 31-12-9Z" fill="#5c4936"/><path d="m43 156 23 17-8 11-24-17Z" fill="#a69d82"/>'};
-function renderProjects(){const list=projects.map((p,i)=>({...p,i})).filter(p=>filter==='all'||p.kind===filter);if(!list.some(p=>p.i===projectIndex))projectIndex=list[0].i;$('#project-list').innerHTML=list.map(p=>`<button class="project-row" data-project="${p.i}" aria-pressed="${projectIndex===p.i}"><span class="item-icon" aria-hidden="true">${p.icon}</span><span><strong>${p.name}</strong><small>${p.type}</small></span></button>`).join('');$('#item-count').textContent=`${list.length} / ∞`;$$('[data-project]').forEach(b=>b.addEventListener('click',()=>{projectIndex=Number(b.dataset.project);renderProject();}));renderProject();}
-function renderProject(){const p=projects[projectIndex];$$('[data-project]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.project)===projectIndex));$('#project-detail').innerHTML=`<div class="relic" aria-hidden="true"><svg viewBox="0 0 190 190" fill="none" stroke="#c2d3da" stroke-width="1.3" stroke-linejoin="round">${relicPaths[p.relic]}</svg></div><p class="eyebrow">${p.type}</p><h2>${p.name}</h2><div class="item-stats"><span>FORGED <b>${p.date}</b></span><span>ENCHANTMENTS <b>${p.stack}</b></span></div><p>${p.description}</p><ul>${p.bullets.map(b=>`<li>${b}</li>`).join('')}</ul><a class="text-link" href="${p.url}" ${p.url.startsWith('https')?'target="_blank" rel="noopener noreferrer"':''}>${p.link} ↗</a>`;}
-$$('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;$$('[data-filter]').forEach(x=>x.setAttribute('aria-pressed',x===b));renderProjects();}));renderProjects();
-const spellContent={
-craft:`<p class="eyebrow">SCHOOL OF MAKING THINGS WORK</p><h2>The craft</h2><p>From low-level systems to an agent that can build a course. Different tools, the same instinct: understand the problem, then make something useful.</p><div class="spell-groups"><div class="spell-group"><h3>Languages</h3><p>C# · C · Java · Python<br>JavaScript · TypeScript · SQL<br>HTML · CSS · Bash</p></div><div class="spell-group"><h3>Web & AI</h3><p>React · Tailwind CSS · Supabase<br>LLM integration · RAG · LangGraph<br>Agent harnesses · Skill creation</p></div><div class="spell-group"><h3>Interactive worlds</h3><p>Unity3D · Revit · Tobii eye tracking<br>Numerical techniques · Algorithm design<br>Programming language design · ANTLR</p></div><div class="spell-group"><h3>Party buffs</h3><p>Team leadership · Mentorship<br>Project scoping · Agile development<br>Cross-functional collaboration · Git</p></div></div>`,
-study:`<p class="eyebrow">DARTMOUTH COLLEGE · CLASS OF 2027</p><h2>The academy</h2><p>Studying Computer Science and Middle Eastern Studies. One teaches me how systems work. The other keeps reminding me that people are more complicated.</p><div class="spell-groups"><div class="spell-group"><h3>Computer science</h3><p>Algorithms<br>Software Design & Implementation<br>Principles of Programming Languages<br>Machine Learning & Statistical Analysis<br>Web Development</p></div><div class="spell-group"><h3>Foundations & beyond</h3><p>Object-Oriented Programming<br>Foundations of Applied CS<br>Discrete Math<br>Morocco Language Study Abroad<br>Arabic · Conversational</p></div></div><div class="chips"><span>College Honor List</span><span>Arabic Drill Instructor</span><span>Contextual Dynamics Laboratory</span></div>`,
-life:`<p class="eyebrow">OPTIONAL OBJECTIVES · VERY IMPORTANT</p><h2>Side quests</h2><p>There is, allegedly, a world outside the code editor.</p><div class="spell-groups"><div class="spell-group"><h3>Higher ground</h3><p>Snowboarding and hiking. A healthy appreciation for mountains, including the ones on this website.</p></div><div class="spell-group"><h3>Further afield</h3><p>Travel, Middle Eastern Studies, and conversational Arabic. Studied abroad in Morocco.</p></div><div class="spell-group"><h3>Bard multiclass</h3><p>Dartmouth Glee Club. Occasionally the right debugging strategy is to sing something else.</p></div><div class="spell-group"><h3>The party</h3><p>Zeta Psi President, Class Council, DARTS, and Quiz Bowl. Apparently “one more activity” is a recurring quest.</p></div></div><div class="lore-buttons"><button class="text-link" data-egg="turtle">Summon familiar ↗</button><button class="text-link" data-egg="speech">Attempt speech check ↗</button></div>`,
-about:`<p class="eyebrow">CHARACTER PROFILE</p><h2>A builder, mostly.</h2><div class="character"><img src="Jacob_Bacus.jpg" alt="Jacob Bacus in his senior-year portrait" loading="lazy"><p>I’m Jacob, from Lone Jack, Missouri, now at Dartmouth in Hanover.<br><br>I’ve built developer tools at Klaviyo, Revit tools at P1 Construction, and interactive and AI experiences at DALI Lab. I like work that connects technical depth with real people.</p></div><div class="spell-groups"><div class="spell-group"><h3>Current build</h3><p>Computer Science + Middle Eastern Studies.<br>Graduating June 2027.</p></div><div class="spell-group"><h3>Origin story</h3><p>This site started as a CS52 assignment featuring an unnecessarily large sea turtle. Some traditions deserve to survive.</p></div></div><div class="lore-buttons"><a href="mailto:jacobcharlesbacus@gmail.com" class="text-link">Send a raven ↗</a><button class="text-link" data-egg="turtle">Meet the original turtle ↗</button></div>`
+let roleIndex = 0;
+function selectStar(index) {
+  const role = roles[roleIndex], star = role.stars[index];
+  $$('[data-star]').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.star) === index));
+  $('#experience-detail').innerHTML = `<h2>${star[0]}</h2><p class="role">${role.role}</p><p class="period">${role.period}</p><p>${star[1]}</p>`;
+}
+function selectRole(index) {
+  roleIndex = index;
+  const shape = shapes[index];
+  $$('[data-role]').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.role) === index));
+  $('#constellation-art').innerHTML = `<path class="constellation-outline" d="${shape.path}"/>` + shape.decoration.map(([x,y]) => `<circle class="faint-star" cx="${x}" cy="${y}" r="1.8"/>`).join('');
+  $('#stars').innerHTML = roles[index].stars.map((s,i) => `<button class="star-node" style="left:${shape.points[i][0]/7}%;top:${shape.points[i][1]/4.5}%" data-star="${i}" aria-label="${s[0]}" aria-pressed="false"><span class="tooltip">${s[0]}</span></button>`).join('');
+  $$('[data-star]').forEach(b => b.onclick = () => selectStar(Number(b.dataset.star)));
+  selectStar(0);
+}
+$('.role-tabs').innerHTML = roles.map((r,i) => `<button data-role="${i}" aria-pressed="false">${r.name}</button>`).join('');
+$$('[data-role]').forEach(b => b.onclick = () => selectRole(Number(b.dataset.role)));
+selectRole(0);
+
+const projectDescriptions = {
+  'GroupTrip.ai':'A collaborative trip planner with AI-assisted recommendations for flights, hotels, and activities.',
+  'Survival Shooter':'A third-person arcade shooter with endless enemy waves, randomized power-ups, and scaling difficulty.'
 };
-function renderSchool(school){$$('[data-school]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.school===school));$('#spell-detail').innerHTML=spellContent[school];$$('[data-egg]').forEach(b=>b.addEventListener('click',()=>{const turtle=b.dataset.egg==='turtle';$('#egg-title').textContent=turtle?'FAMILIAR SUMMONED · THE ORIGINAL SEA TURTLE':'SPEECH CHECK · A LOCAL ARTIFACT';$('#egg-image').src=turtle?'SeaTurtleBrazil.jpg':'assets/speech-check.jpg';$('#egg-image').alt=turtle?'The sea turtle from the original Jacob Bacus website':'A humorous election meme from Jacob’s Fun Stuff folder';$('#egg-caption').textContent=turtle?'The original website’s most qualified resident. Carry weight: considerable. The size was intentional.':'Recovered from the Fun Stuff folder. Some artifacts explain themselves. This one may require a bard.';$('#easter-egg').showModal();}));}$$('[data-school]').forEach(b=>b.addEventListener('click',()=>renderSchool(b.dataset.school)));renderSchool('craft');
-// Hash routes keep deep links, Back, and static hosts working without rewrites.
-const validViews=['home','experience','inventory','magic','map'];let view='home';
-function route(focus=true){const next=location.hash.slice(1)||'home';if(next==='main'){document.getElementById('main').focus();return;}view=validViews.includes(next)?next:'home';$$('.view').forEach(el=>el.hidden=el.id!==view);document.body.dataset.view=view;$('#back-home').hidden=view==='home';$('#home-controls').hidden=view!=='home';document.title=`${view==='home'?'Jacob Bacus':({experience:'Experience',inventory:'Inventory',magic:'Magic',map:'The map'}[view])+' · Jacob Bacus'} — A Developer's Adventure`;window.scrollTo(0,0);if(focus&&view!=='home')$(`#${view}-title`).focus({preventScroll:true});else if(focus)$('.north').focus({preventScroll:true});}
-window.addEventListener('hashchange',()=>{route();requestAnimationFrame(()=>{if(location.hash!=='#main')window.scrollTo(0,0);});});route(false);
-// Pointer-driven four-way menu, plus ordinary links for touch and keyboard.
-let chosen=null;const radial=$('.radial');
-function choose(direction){chosen=direction;$$('.direction').forEach(a=>a.classList.toggle('active',a.dataset.direction===direction));}
-radial.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const r=radial.getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2;if(Math.hypot(x,y)<35){choose(null);return;}choose(Math.abs(x)>Math.abs(y)?x>0?'east':'west':y>0?'south':'north');});
-radial.addEventListener('pointerleave',()=>choose(null));radial.addEventListener('click',e=>{if(!e.target.closest('a')&&chosen)location.hash=$(`[data-direction="${chosen}"]`).hash;});
-const journal=$('#journal');$('#quick-view').addEventListener('click',()=>journal.showModal());$$('.close-dialog').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));$$('dialog').forEach(d=>d.addEventListener('click',e=>{const r=d.getBoundingClientRect();if(e.target===d&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))d.close();}));
-document.addEventListener('keydown',e=>{if(e.altKey||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.target.isContentEditable)return;if($('dialog[open]'))return;if(e.key==='Escape'&&view!=='home'){location.hash='home';return;}if(e.key.toLowerCase()==='j'){e.preventDefault();journal.showModal();return;}if(view==='home'){const dirs={ArrowUp:'north',ArrowLeft:'west',ArrowRight:'east',ArrowDown:'south'};if(dirs[e.key]){e.preventDefault();choose(dirs[e.key]);$(`[data-direction="${chosen}"]`).focus({preventScroll:true});}else if(e.key==='Enter'&&chosen&&!e.target.closest('a,button'))location.hash=$(`[data-direction="${chosen}"]`).hash;}});
-// All atmospheric animation is optional. No pointer lock or scroll hijacking.
-const motionMedia=matchMedia('(prefers-reduced-motion: reduce)');let savedMotion=null;try{savedMotion=localStorage.getItem('jacob-reduced-motion');}catch{}let reduced=savedMotion===null?motionMedia.matches:savedMotion==='true';let frame=0;
-function setMotion(){document.body.classList.toggle('reduced-motion',reduced);$('#motion').textContent=`Motion: ${reduced?'off':'on'}`;$('#motion').setAttribute('aria-pressed',reduced);cancelAnimationFrame(frame);if(!reduced&&!document.hidden)animate();}
-$('#motion').addEventListener('click',()=>{reduced=!reduced;try{localStorage.setItem('jacob-reduced-motion',String(reduced));}catch{}setMotion();});motionMedia.addEventListener('change',e=>{reduced=e.matches;setMotion();});document.addEventListener('pointermove',e=>{if(reduced||e.pointerType==='touch')return;document.documentElement.style.setProperty('--px',`${(e.clientX/innerWidth-.5)*-13}px`);document.documentElement.style.setProperty('--py',`${(e.clientY/innerHeight-.5)*-9}px`);});
-const canvas=$('#sky'),ctx=canvas.getContext('2d');let particles=[],lastFrame=0;
-function resizeSky(){const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=innerWidth*dpr;canvas.height=innerHeight*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);particles=Array.from({length:45},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1+.2,s:Math.random()*.18+.06,phase:Math.random()*6.3}));}
-function animate(t=0){if(t-lastFrame>32){ctx.clearRect(0,0,innerWidth,innerHeight);particles.forEach(p=>{p.y-=p.s;if(p.y<0)p.y=innerHeight;ctx.fillStyle=`rgba(197,224,238,${.16+.16*Math.sin(t/1900+p.phase)})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();});lastFrame=t;}frame=requestAnimationFrame(animate);}
-window.addEventListener('resize',resizeSky);document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(frame);if(!document.hidden&&!reduced)animate();});resizeSky();setMotion();
-// An original topographic fantasy map, drawn locally rather than loaded from a service.
-let terrain='';for(let k=0;k<22;k++){const y=k*34-20;let d=`M-40 ${y}`;for(let x=-40;x<=1260;x+=25)d+=` L${x} ${y+Math.sin(x/105+k*.7)*35+Math.sin(x/51-k)*12}`;terrain+=`<path d="${d}" fill="none" stroke="#91a6a0" stroke-width=".7" opacity="${.12+(k%3)*.045}"/>`;}
-for(let i=0;i<44;i++){const x=60+(i*83)%1090,y=70+(i*47)%480,h=20+(i%5)*7;terrain+=`<path d="m${x-22} ${y+h} 22 ${-h} 24 ${h}m-36 ${-h/2} 12 ${-h/2} 11 ${h/2}-11-5-12 5" fill="#121f29" stroke="#859c9f" stroke-width=".7" opacity=".4"/>`;}
-terrain+='<path d="M0 580Q140 450 260 525T530 470 680 550 930 440 1200 480L1200 700H0Z" fill="#0d1a27" opacity=".65"/><path d="M0 580Q140 450 260 525T530 470 680 550 930 440 1200 480" fill="none" stroke="#829ba3" opacity=".35"/><path d="M324 245 576 385 792 196 912 399" fill="none" stroke="#b9b39b" stroke-dasharray="3 8" opacity=".35"/>';$('#terrain').innerHTML=terrain;
-const map=$('.world-map'),world=$('#map-world');let mapX=0,mapY=0,zoom=1,drag=null,dragged=false;
-function updateMap(){const maxX=map.clientWidth*.32*zoom,maxY=map.clientHeight*.32*zoom;mapX=Math.max(-maxX,Math.min(maxX,mapX));mapY=Math.max(-maxY,Math.min(maxY,mapY));world.style.transform=`translate(${mapX}px,${mapY}px) scale(${zoom})`;}
-map.addEventListener('pointerdown',e=>{if(e.target.closest('.map-controls')||e.button!==0)return;drag={x:e.clientX,y:e.clientY,startX:mapX,startY:mapY,id:e.pointerId};dragged=false;});map.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>6){dragged=true;map.setPointerCapture(e.pointerId);}if(dragged){mapX=drag.startX+dx;mapY=drag.startY+dy;updateMap();}});map.addEventListener('pointerup',()=>{drag=null;});map.addEventListener('pointercancel',()=>{drag=null;dragged=false;});map.addEventListener('click',e=>{if(dragged&&!e.target.closest('.map-controls')){e.preventDefault();e.stopPropagation();dragged=false;}},true);map.addEventListener('dragstart',e=>e.preventDefault());
-$('#zoom-in').addEventListener('click',()=>{zoom=Math.min(2,zoom+.2);updateMap();});$('#zoom-out').addEventListener('click',()=>{zoom=Math.max(.8,zoom-.2);updateMap();});$('#reset-map').addEventListener('click',()=>{mapX=0;mapY=0;zoom=1;updateMap();});
+function selectProject(index) {
+  const p = projects[index];
+  $$('[data-project]').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.project) === index));
+  const links=[{url:p.url,link:p.link},...(p.extraLinks||[])];
+  $('#project-detail').innerHTML = `<h2>${p.name}</h2><p class="project-meta">${p.date} · ${p.stack}</p><p>${projectDescriptions[p.name] || p.description}</p><ul>${p.bullets.map(b => `<li>${b}</li>`).join('')}</ul><div class="project-links">${links.map(({url,link}) => `<a class="text-link" href="${url}" ${url.startsWith('https') ? 'target="_blank" rel="noopener"' : ''}>${link.replace('Enter the repository','View source').replace('Inspect the source','View source')} ↗</a>`).join('')}</div>`;
+}
+$('#project-list').innerHTML = projects.map((p,i) => `<button data-project="${i}" aria-pressed="false">${p.name}</button>`).join('');
+$$('[data-project]').forEach(b => b.onclick = () => { selectProject(Number(b.dataset.project)); if(innerWidth<701) $('#project-detail').scrollIntoView({behavior:reduced?'instant':'smooth',block:'start'}); });
+selectProject(0);
+const skills = {
+  languages:['Languages', [['Programming','C# · C · Java · Python<br>JavaScript · TypeScript · SQL<br>HTML · CSS · Bash'],['Spoken languages','English<br>Arabic (conversational)']]],
+  tools:['Tools & Technologies', [['Web & AI','React · Tailwind CSS · Supabase<br>LangGraph · RAG · LLM integration<br>Agent harnesses · Skill creation'],['Interactive systems','Unity3D · Revit<br>Tobii eye tracking · ANTLR'],['Development','Git · Agile development<br>API integration · Algorithm design'],['Leadership','Project scoping · Mentorship<br>Cross-functional collaboration']]],
+  courses:['Coursework', [['Computer Science','Algorithms<br>Machine Learning & Statistical Analysis<br>Software Design & Implementation<br>Principles of Programming Languages<br>Web Development'],['Foundations','Object-Oriented Programming<br>Foundations of Applied CS<br>Discrete Math'],['Middle Eastern Studies','Morocco Language Study Abroad<br>Arabic Drill Instructor']]],
+  interests:['Interests', [['Outdoors','Snowboarding · Hiking · Travel'],['Languages & culture','Middle Eastern Studies<br>Conversational Arabic'],['Music','Dartmouth Glee Club'],['Community','Zeta Psi President<br>Class Council<br>Dartmouth Advising and Research for Tech Startups (DARTS)<br>Quiz Bowl']]]
+};
+function selectSkill(key) {
+  $$('[data-school]').forEach(b => b.setAttribute('aria-pressed', b.dataset.school === key));
+  const [name, groups] = skills[key];
+  $('#skill-detail').innerHTML = `<h2>${name}</h2><div class="skill-grid">${groups.map(([title,text]) => `<div><h3>${title}</h3><p>${text}</p></div>`).join('')}</div>`;
+}
+$$('[data-school]').forEach(b => b.onclick = () => selectSkill(b.dataset.school));
+selectSkill('languages');
+
+const radial = $('.radial');
+let chosen = null;
+function choose(direction) {
+  chosen = direction;
+  radial.dataset.active = direction || '';
+  const offsets = {north:[0,14],south:[0,-14],west:[22,0],east:[-22,0]};
+  const [x,y] = offsets[direction] || [0,0];
+  radial.style.setProperty('--rx', `${x}px`);
+  radial.style.setProperty('--ry', `${y}px`);
+  radial.style.setProperty('--rz', direction ? '1.08' : '1');
+  $$('.direction').forEach(a => a.classList.toggle('active', a.dataset.direction === direction));
+}
+radial.addEventListener('pointermove', e => {
+  if(e.pointerType==='touch') return;
+  const r=radial.getBoundingClientRect(), x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
+  choose(Math.hypot(x,y)<30 ? null : Math.abs(x)>Math.abs(y)*1.9 ? (x>0?'east':'west') : (y>0?'south':'north'));
+});
+radial.addEventListener('pointerleave', () => choose(null));
+$$('.direction').forEach(a => a.addEventListener('focus', () => choose(a.dataset.direction)));
+radial.addEventListener('click', e => { if(!e.target.closest('a') && chosen) location.hash=$(`[data-direction=${chosen}]`).hash; });
+
+let view='home', transitionID=0, resumeOrigin='home';
+const aliases={inventory:'projects',magic:'skills',map:'more'};
+const titles={home:'Jacob Bacus',projects:'Projects',skills:'Skills & Interests',experience:'Experience',more:'More',resume:'Résumé'};
+async function route(initial=false) {
+  let next=location.hash.slice(1)||'home';
+  if(next==='main'){ $('#main').focus(); return; }
+  next=aliases[next]||next;
+  if(!titles[next]) next='home';
+  if(next===view&&!initial&&document.body.dataset.view===next) return;
+  const ticket=++transitionID;
+  const previous=$(`#${view}`), incoming=$(`#${next}`);
+  if(next==='resume'&&view!=='resume') resumeOrigin=view;
+  // Side menus scoot the UI; vertical destinations move the camera between scenes.
+  // Reversing the endpoints also reverses the entire Back animation.
+  const positions={home:[0,0],skills:[-90,0],projects:[90,0],experience:[0,-innerHeight],more:[0,innerHeight],resume:[0,0]};
+  const from=positions[view], to=positions[next];
+  const x=from[0]-to[0], y=from[1]-to[1];
+  $$('.view').forEach(el=>{
+    el.getAnimations().forEach(a=>a.cancel());
+    el.classList.remove('view-leaving');
+    el.hidden=el!==incoming;
+    el.inert=el!==incoming;
+  });
+  view=next;
+  document.body.dataset.view=next;
+  $('.back').hidden=next==='home';
+  $('.back').href=`#${next==='resume'?resumeOrigin:'home'}`;
+  $('.back').setAttribute('aria-label', `Back to ${titles[next==='resume'?resumeOrigin:'home']}`);
+  $('#motion').hidden=next!=='home';
+  $('.resume-link').hidden=next==='resume';
+  document.title=next==='home'?'Jacob Bacus':`${titles[next]} · Jacob Bacus`;
+  window.scrollTo(0,0);
+  if(!initial&&!reduced&&previous!==incoming) {
+    document.body.classList.add('transitioning');
+    previous.hidden=false;
+    previous.classList.add('view-leaving');
+    const timing={duration:650,easing:'cubic-bezier(.22,.7,.25,1)',fill:'both'};
+    const outgoing=previous.animate([{opacity:1,transform:'translate(0,0)'},{opacity:0,transform:`translate(${x}px,${y}px)`}],timing);
+    const entering=incoming.animate([{opacity:0,transform:`translate(${-x}px,${-y}px)`},{opacity:1,transform:'translate(0,0)'}],timing);
+    await Promise.all([outgoing.finished,entering.finished]).catch(()=>{});
+    if(ticket!==transitionID) return;
+    previous.hidden=true;
+    previous.classList.remove('view-leaving');
+    outgoing.cancel();
+    entering.cancel();
+  }
+  document.body.classList.remove('transitioning');
+  if(!initial) (next==='home'?$('.north'):incoming.querySelector('h1')).focus({preventScroll:true});
+}
+window.addEventListener('hashchange',()=>route());
+// Prevent the browser's native fragment jump from racing the animated transition.
+$$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();if(a.hash==='#main'){$('#main').focus();return;}history.pushState(null,'',a.hash);route();}));
+window.addEventListener('popstate',()=>route());
+route(true);
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.altKey||e.metaKey||/INPUT|TEXTAREA/.test(e.target.tagName))return;
+  if(e.key==='Escape'&&view!=='home'){history.pushState(null,'',$('.back').hash);route();}
+  const dirs={ArrowUp:'north',ArrowDown:'south',ArrowLeft:'west',ArrowRight:'east'};
+  if(view==='home'&&dirs[e.key]){e.preventDefault();choose(dirs[e.key]);$(`[data-direction=${chosen}]`).focus({preventScroll:true});}
+});
+document.addEventListener('pointermove',e=>{if(reduced||e.pointerType==='touch')return;document.documentElement.style.setProperty('--mx',`${(e.clientX/innerWidth-.5)*-17}px`);document.documentElement.style.setProperty('--my',`${(e.clientY/innerHeight-.5)*-12}px`);});
+
+const canvas=$('#sky'), ctx=canvas.getContext('2d');
+let stars=[], frame=0;
+function resize(){const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=innerWidth*dpr;canvas.height=innerHeight*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);let seed=42;const rand=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};stars=Array.from({length:230},()=>({x:rand()*innerWidth,y:rand()*innerHeight,r:rand()*1.2+.2,phase:rand()*6.28}));draw(0);}
+function draw(time){ctx.clearRect(0,0,innerWidth,innerHeight);for(const s of stars){ctx.fillStyle=`rgba(205,227,245,${.25+.45*(.5+.5*Math.sin((reduced?0:time/2600)+s.phase))})`;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}}
+let last=0;
+function animate(time){if(time-last>45){draw(time);last=time;}frame=requestAnimationFrame(animate);}
+resize();window.addEventListener('resize',resize);frame=requestAnimationFrame(animate);
+document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(frame);if(!document.hidden)frame=requestAnimationFrame(animate);});
