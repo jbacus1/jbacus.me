@@ -40,13 +40,13 @@ selectRole(0);
 
 const projectDescriptions = {
   'GroupTrip.ai':'A collaborative trip planner with AI-assisted recommendations for flights, hotels, and activities.',
-  'Survival Shooter':'A third-person arcade shooter with endless enemy waves, randomized power-ups, and scaling difficulty.',
-  'Multiplayer Dungeon':'A multiplayer dungeon supporting 26 players and one spectator through a UDP client-server architecture.'
+  'Survival Shooter':'A third-person arcade shooter with endless enemy waves, randomized power-ups, and scaling difficulty.'
 };
 function selectProject(index) {
   const p = projects[index];
   $$('[data-project]').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.project) === index));
-  $('#project-detail').innerHTML = `<h2>${p.name}</h2><p class="project-meta">${p.date} · ${p.stack}</p><p>${projectDescriptions[p.name] || p.description}</p><ul>${p.bullets.map(b => `<li>${b}</li>`).join('')}</ul><a class="text-link" href="${p.url}" ${p.url.startsWith('https') ? 'target="_blank" rel="noopener"' : ''}>${p.link.replace('Enter the repository','View source').replace('Inspect the source','View source')} ↗</a>`;
+  const links=[{url:p.url,link:p.link},...(p.extraLinks||[])];
+  $('#project-detail').innerHTML = `<h2>${p.name}</h2><p class="project-meta">${p.date} · ${p.stack}</p><p>${projectDescriptions[p.name] || p.description}</p><ul>${p.bullets.map(b => `<li>${b}</li>`).join('')}</ul><div class="project-links">${links.map(({url,link}) => `<a class="text-link" href="${url}" ${url.startsWith('https') ? 'target="_blank" rel="noopener"' : ''}>${link.replace('Enter the repository','View source').replace('Inspect the source','View source')} ↗</a>`).join('')}</div>`;
 }
 $('#project-list').innerHTML = projects.map((p,i) => `<button data-project="${i}" aria-pressed="false">${p.name}</button>`).join('');
 $$('[data-project]').forEach(b => b.onclick = () => { selectProject(Number(b.dataset.project)); if(innerWidth<701) $('#project-detail').scrollIntoView({behavior:reduced?'instant':'smooth',block:'start'}); });
@@ -55,7 +55,7 @@ const skills = {
   languages:['Languages', [['Programming','C# · C · Java · Python<br>JavaScript · TypeScript · SQL<br>HTML · CSS · Bash'],['Spoken languages','English<br>Arabic (conversational)']]],
   tools:['Tools & Technologies', [['Web & AI','React · Tailwind CSS · Supabase<br>LangGraph · RAG · LLM integration<br>Agent harnesses · Skill creation'],['Interactive systems','Unity3D · Revit<br>Tobii eye tracking · ANTLR'],['Development','Git · Agile development<br>API integration · Algorithm design'],['Leadership','Project scoping · Mentorship<br>Cross-functional collaboration']]],
   courses:['Coursework', [['Computer Science','Algorithms<br>Machine Learning & Statistical Analysis<br>Software Design & Implementation<br>Principles of Programming Languages<br>Web Development'],['Foundations','Object-Oriented Programming<br>Foundations of Applied CS<br>Discrete Math'],['Middle Eastern Studies','Morocco Language Study Abroad<br>Arabic Drill Instructor']]],
-  interests:['Interests', [['Outdoors','Snowboarding · Hiking · Travel'],['Languages & culture','Middle Eastern Studies<br>Conversational Arabic'],['Music','Dartmouth Glee Club'],['Community','Zeta Psi President<br>Class Council · DARTS · Quiz Bowl']]]
+  interests:['Interests', [['Outdoors','Snowboarding · Hiking · Travel'],['Languages & culture','Middle Eastern Studies<br>Conversational Arabic'],['Music','Dartmouth Glee Club'],['Community','Zeta Psi President<br>Class Council<br>Dartmouth Advising and Research for Tech Startups (DARTS)<br>Quiz Bowl']]]
 };
 function selectSkill(key) {
   $$('[data-school]').forEach(b => b.setAttribute('aria-pressed', b.dataset.school === key));
@@ -86,7 +86,7 @@ radial.addEventListener('pointerleave', () => choose(null));
 $$('.direction').forEach(a => a.addEventListener('focus', () => choose(a.dataset.direction)));
 radial.addEventListener('click', e => { if(!e.target.closest('a') && chosen) location.hash=$(`[data-direction=${chosen}]`).hash; });
 
-let view='home', transitionID=0;
+let view='home', transitionID=0, resumeOrigin='home';
 const aliases={inventory:'projects',magic:'skills',map:'more'};
 const titles={home:'Jacob Bacus',projects:'Projects',skills:'Skills & Interests',experience:'Experience',more:'More',resume:'Résumé'};
 async function route(initial=false) {
@@ -97,23 +97,42 @@ async function route(initial=false) {
   if(next===view&&!initial&&document.body.dataset.view===next) return;
   const ticket=++transitionID;
   const previous=$(`#${view}`), incoming=$(`#${next}`);
-  $$('.view').forEach(el=>el.getAnimations().forEach(a=>a.cancel()));
-  const vertical=['experience','more','resume'].includes(next)||['experience','more','resume'].includes(view);
-  const sign=next==='skills'?-1:1;
-  document.body.dataset.view=next;
-  if(!initial&&!reduced) {
-    const end=vertical?'translateY(95vh) scale(.9)':`translateX(${sign*85}vw) scale(1.15)`;
-    await previous.animate([{opacity:1,transform:'none'},{opacity:0,transform:end}],{duration:480,easing:'cubic-bezier(.5,0,.4,1)',fill:'forwards'}).finished.catch(()=>{});
-  }
-  if(ticket!==transitionID) return;
-  $$('.view').forEach(el=>{el.hidden=el!==incoming;el.inert=el!==incoming;});
-  previous.getAnimations().forEach(a=>a.cancel());
+  if(next==='resume'&&view!=='resume') resumeOrigin=view;
+  // Side menus scoot the UI; vertical destinations move the camera between scenes.
+  // Reversing the endpoints also reverses the entire Back animation.
+  const positions={home:[0,0],skills:[-90,0],projects:[90,0],experience:[0,-innerHeight],more:[0,innerHeight],resume:[0,0]};
+  const from=positions[view], to=positions[next];
+  const x=from[0]-to[0], y=from[1]-to[1];
+  $$('.view').forEach(el=>{
+    el.getAnimations().forEach(a=>a.cancel());
+    el.classList.remove('view-leaving');
+    el.hidden=el!==incoming;
+    el.inert=el!==incoming;
+  });
   view=next;
+  document.body.dataset.view=next;
   $('.back').hidden=next==='home';
+  $('.back').href=`#${next==='resume'?resumeOrigin:'home'}`;
+  $('.back').setAttribute('aria-label', `Back to ${titles[next==='resume'?resumeOrigin:'home']}`);
+  $('#motion').hidden=next!=='home';
   $('.resume-link').hidden=next==='resume';
   document.title=next==='home'?'Jacob Bacus':`${titles[next]} · Jacob Bacus`;
   window.scrollTo(0,0);
-  if(!initial&&!reduced) incoming.animate([{opacity:0,transform:vertical?'translateY(-70px)':`translateX(${-sign*80}px)`},{opacity:1,transform:'none'}],{duration:600,easing:'cubic-bezier(.2,.7,.2,1)'});
+  if(!initial&&!reduced&&previous!==incoming) {
+    document.body.classList.add('transitioning');
+    previous.hidden=false;
+    previous.classList.add('view-leaving');
+    const timing={duration:650,easing:'cubic-bezier(.22,.7,.25,1)',fill:'both'};
+    const outgoing=previous.animate([{opacity:1,transform:'translate(0,0)'},{opacity:0,transform:`translate(${x}px,${y}px)`}],timing);
+    const entering=incoming.animate([{opacity:0,transform:`translate(${-x}px,${-y}px)`},{opacity:1,transform:'translate(0,0)'}],timing);
+    await Promise.all([outgoing.finished,entering.finished]).catch(()=>{});
+    if(ticket!==transitionID) return;
+    previous.hidden=true;
+    previous.classList.remove('view-leaving');
+    outgoing.cancel();
+    entering.cancel();
+  }
+  document.body.classList.remove('transitioning');
   if(!initial) (next==='home'?$('.north'):incoming.querySelector('h1')).focus({preventScroll:true});
 }
 window.addEventListener('hashchange',()=>route());
@@ -123,7 +142,7 @@ window.addEventListener('popstate',()=>route());
 route(true);
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.altKey||e.metaKey||/INPUT|TEXTAREA/.test(e.target.tagName))return;
-  if(e.key==='Escape'&&view!=='home'){history.pushState(null,'','#home');route();}
+  if(e.key==='Escape'&&view!=='home'){history.pushState(null,'',$('.back').hash);route();}
   const dirs={ArrowUp:'north',ArrowDown:'south',ArrowLeft:'west',ArrowRight:'east'};
   if(view==='home'&&dirs[e.key]){e.preventDefault();choose(dirs[e.key]);$(`[data-direction=${chosen}]`).focus({preventScroll:true});}
 });

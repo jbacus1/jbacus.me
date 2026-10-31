@@ -110,8 +110,8 @@ window.portfolio = {
         "Built trip chat, group polls, shared finances, an interactive map, and exports.",
         "Developed February–March 2026."
       ],
-      "url": "https://project-grouptrip-ai-lx69.onrender.com/",
-      "link": "Explore the app"
+      "url": "https://drive.google.com/file/d/1N7jwQ57S-Kj6KdOTmf8WhjZ9i4wD3yfz/view?usp=sharing",
+      "link": "Watch demo video"
     },
     {
       "name": "Creative Navigator",
@@ -145,7 +145,13 @@ window.portfolio = {
         "Developed research workflows for museum curators."
       ],
       "url": "https://www.stpetersburg.usf.edu/news/2026/eye-tracking-research-explores-art-appreciation-at-the-dali-museum.aspx",
-      "link": "Read about the research"
+      "link": "Read about the research",
+      "extraLinks": [
+        {
+          "url": "https://drive.google.com/file/d/1wBxJPNMF9ID9dx2NHry7wnjrCnM4nkPC/view?usp=sharing",
+          "link": "Watch demo video"
+        }
+      ]
     },
     {
       "name": "Tiny Search Engine",
@@ -189,7 +195,7 @@ window.portfolio = {
       "date": "2025",
       "stack": "C · UDP · Client/server",
       "relic": "sword",
-      "description": "A dungeon for 26 players and one spectator. Finding the gold is easier than agreeing on a network protocol.",
+      "description": "A multiplayer dungeon where up to 26 players compete to collect the most gold and win, with room for one spectator.",
       "bullets": [
         "Built with a three-person team using UDP client/server architecture.",
         "Engineered dynamic visibility and in-game event handling.",
@@ -197,23 +203,6 @@ window.portfolio = {
       ],
       "url": "https://github.com/jbacus1/Nuggets",
       "link": "Enter the repository"
-    },
-    {
-      "name": "Gradient-Domain Blending",
-      "kind": "systems",
-      "icon": "◈",
-      "type": "Seamless image compositing",
-      "date": "2024",
-      "stack": "Sparse matrices · LSQR",
-      "relic": "crystal",
-      "description": "A copy-and-paste tool that makes two images belong together using the mathematics of their gradients.",
-      "bullets": [
-        "Used least-squares optimization to minimize pixel intensity differences.",
-        "Applied sparse matrix representation and the LSQR algorithm.",
-        "Implemented scalable, seamless source-to-background blending."
-      ],
-      "url": "https://github.com/jbacus1/Image-Paste-with-Poisson-Blending",
-      "link": "Inspect the source"
     }
   ]
 };
