@@ -29,7 +29,7 @@ function selectRole(index) {
   roleIndex = index;
   const shape = shapes[index];
   $$('[data-role]').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.role) === index));
-  $('#constellation-art').innerHTML = `<path class="constellation-outline" d="${shape.path}"/>` + shape.decoration.map(([x,y]) => `<circle class="faint-star" cx="${x}" cy="${y}" r="1.8"/>`).join('');
+  $('#constellation-art').innerHTML = `<path class="constellation-glow" d="${shape.path}"/><path class="constellation-outline" d="${shape.path}"/>` + shape.decoration.map(([x,y]) => `<circle class="faint-star" cx="${x}" cy="${y}" r="1.8"/>`).join('');
   $('#stars').innerHTML = roles[index].stars.map((s,i) => `<button class="star-node" style="left:${shape.points[i][0]/7}%;top:${shape.points[i][1]/4.5}%" data-star="${i}" aria-label="${s[0]}" aria-pressed="false"><span class="tooltip">${s[0]}</span></button>`).join('');
   $$('[data-star]').forEach(b => b.onclick = () => selectStar(Number(b.dataset.star)));
   selectStar(0);
@@ -66,29 +66,51 @@ $$('[data-school]').forEach(b => b.onclick = () => selectSkill(b.dataset.school)
 selectSkill('languages');
 
 const radial = $('.radial');
+const touchQuery = matchMedia('(hover: none) and (pointer: coarse)');
 let chosen = null;
 function choose(direction) {
-  chosen = direction;
-  radial.dataset.active = direction || '';
+  chosen = touchQuery.matches ? null : direction;
+  radial.dataset.active = chosen || '';
   const offsets = {north:[0,14],south:[0,-14],west:[22,0],east:[-22,0]};
-  const [x,y] = offsets[direction] || [0,0];
+  const [x,y] = offsets[chosen] || [0,0];
   radial.style.setProperty('--rx', `${x}px`);
   radial.style.setProperty('--ry', `${y}px`);
-  radial.style.setProperty('--rz', direction ? '1.08' : '1');
-  $$('.direction').forEach(a => a.classList.toggle('active', a.dataset.direction === direction));
+  radial.style.setProperty('--rz', chosen ? '1.08' : '1');
+  $$('.direction').forEach(a => a.classList.toggle('active', a.dataset.direction === chosen));
+}
+function updateInputMode() {
+  document.body.classList.toggle('touch-navigation', touchQuery.matches);
+  choose(null);
+}
+touchQuery.addEventListener('change', updateInputMode);
+updateInputMode();
+function directionAt(e) {
+  const r=radial.getBoundingClientRect();
+  const x=(e.clientX-r.left-r.width/2)/(r.width/2);
+  const y=(e.clientY-r.top-r.height/2)/(r.height/2);
+  if(Math.hypot(x,y)<.13) return null;
+  return Math.abs(x)>Math.abs(y) ? (x>0?'east':'west') : (y>0?'south':'north');
 }
 radial.addEventListener('pointermove', e => {
-  if(e.pointerType==='touch') return;
-  const r=radial.getBoundingClientRect(), x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
-  choose(Math.hypot(x,y)<30 ? null : Math.abs(x)>Math.abs(y)*1.9 ? (x>0?'east':'west') : (y>0?'south':'north'));
+  if(e.pointerType==='touch'||touchQuery.matches) return;
+  choose(e.target.closest('.direction')?.dataset.direction || directionAt(e));
 });
 radial.addEventListener('pointerleave', () => choose(null));
 $$('.direction').forEach(a => a.addEventListener('focus', () => choose(a.dataset.direction)));
-radial.addEventListener('click', e => { if(!e.target.closest('a') && chosen) location.hash=$(`[data-direction=${chosen}]`).hash; });
+radial.addEventListener('click', e => {
+  if(e.target.closest('a')||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey) return;
+  const direction=directionAt(e);
+  if(direction) navigate($(`[data-direction=${direction}]`).hash);
+});
+function navigate(hash) {
+  // Never assign location.hash: native anchor scrolling competes with the scene animation.
+  history.pushState(null,'',hash);
+  route();
+}
 
 let view='home', transitionID=0, resumeOrigin='home';
 const aliases={inventory:'projects',magic:'skills',map:'more'};
-const titles={home:'Jacob Bacus',projects:'Projects',skills:'Skills & Interests',experience:'Experience',more:'More',resume:'Résumé'};
+const titles={home:'Jacob Bacus',projects:'Projects',skills:'Skills & Interests',experience:'Experience',more:'More',resume:'Resume'};
 async function route(initial=false) {
   let next=location.hash.slice(1)||'home';
   if(next==='main'){ $('#main').focus(); return; }
@@ -96,6 +118,7 @@ async function route(initial=false) {
   if(!titles[next]) next='home';
   if(next===view&&!initial&&document.body.dataset.view===next) return;
   const ticket=++transitionID;
+  choose(null);
   const previous=$(`#${view}`), incoming=$(`#${next}`);
   if(next==='resume'&&view!=='resume') resumeOrigin=view;
   // Side menus scoot the UI; vertical destinations move the camera between scenes.
@@ -133,26 +156,17 @@ async function route(initial=false) {
     entering.cancel();
   }
   document.body.classList.remove('transitioning');
-  if(!initial) (next==='home'?$('.north'):incoming.querySelector('h1')).focus({preventScroll:true});
+  if(!initial) incoming.querySelector('h1').focus({preventScroll:true});
 }
 window.addEventListener('hashchange',()=>route());
 // Prevent the browser's native fragment jump from racing the animated transition.
-$$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();if(a.hash==='#main'){$('#main').focus();return;}history.pushState(null,'',a.hash);route();}));
+$$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();if(a.hash==='#main'){$('#main').focus();return;}navigate(a.hash);}));
 window.addEventListener('popstate',()=>route());
 route(true);
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.altKey||e.metaKey||/INPUT|TEXTAREA/.test(e.target.tagName))return;
-  if(e.key==='Escape'&&view!=='home'){history.pushState(null,'',$('.back').hash);route();}
+  if(e.key==='Escape'&&view!=='home'){navigate($('.back').hash);}
   const dirs={ArrowUp:'north',ArrowDown:'south',ArrowLeft:'west',ArrowRight:'east'};
-  if(view==='home'&&dirs[e.key]){e.preventDefault();choose(dirs[e.key]);$(`[data-direction=${chosen}]`).focus({preventScroll:true});}
+  if(view==='home'&&dirs[e.key]){e.preventDefault();choose(dirs[e.key]);$(`[data-direction=${dirs[e.key]}]`).focus({preventScroll:true});}
 });
-document.addEventListener('pointermove',e=>{if(reduced||e.pointerType==='touch')return;document.documentElement.style.setProperty('--mx',`${(e.clientX/innerWidth-.5)*-17}px`);document.documentElement.style.setProperty('--my',`${(e.clientY/innerHeight-.5)*-12}px`);});
-
-const canvas=$('#sky'), ctx=canvas.getContext('2d');
-let stars=[], frame=0;
-function resize(){const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=innerWidth*dpr;canvas.height=innerHeight*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);let seed=42;const rand=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};stars=Array.from({length:230},()=>({x:rand()*innerWidth,y:rand()*innerHeight,r:rand()*1.2+.2,phase:rand()*6.28}));draw(0);}
-function draw(time){ctx.clearRect(0,0,innerWidth,innerHeight);for(const s of stars){ctx.fillStyle=`rgba(205,227,245,${.25+.45*(.5+.5*Math.sin((reduced?0:time/2600)+s.phase))})`;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}}
-let last=0;
-function animate(time){if(time-last>45){draw(time);last=time;}frame=requestAnimationFrame(animate);}
-resize();window.addEventListener('resize',resize);frame=requestAnimationFrame(animate);
-document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(frame);if(!document.hidden)frame=requestAnimationFrame(animate);});
+document.addEventListener('pointermove',e=>{if(reduced||e.pointerType==='touch'||touchQuery.matches)return;document.documentElement.style.setProperty('--mx',`${(e.clientX/innerWidth-.5)*-17}px`);document.documentElement.style.setProperty('--my',`${(e.clientY/innerHeight-.5)*-12}px`);});
