@@ -108,9 +108,11 @@ article li{margin-bottom:9px}
 .star-node:hover .tooltip,.star-node:focus-visible .tooltip{opacity:1}
 #experience-detail{padding:25px 0 25px 30px;border-left:1px solid #9cbad63b;text-shadow:0 2px 8px #020811}
 #experience-detail h2{font-size:36px}
-#experience-next{margin-top:24px;padding:10px 0;border-bottom:1px solid #b8d7e3;color:#f0f8fc;font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.06em}
+.experience-controls{display:flex;gap:28px;margin-top:24px}
+.experience-controls button{padding:10px 0;border-bottom:1px solid #b8d7e3;color:#f0f8fc;font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.06em}
+#experience-previous span{margin-right:10px}
 #experience-next span{margin-left:10px}
-#experience-next:hover{color:white;border-color:white}
+.experience-controls button:hover{color:white;border-color:white}
 .role{font-size:13px!important}
 .period{font-size:11px!important;color:#8fa8b8!important;margin:8px 0 24px}
 .more{max-width:680px}

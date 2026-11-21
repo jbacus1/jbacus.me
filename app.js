@@ -25,8 +25,15 @@ function selectStar(index) {
   const role = roles[roleIndex], star = role.stars[index];
   $$('[data-star]').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.star) === index));
   $('#experience-content').innerHTML = `<h2>${star[0]}</h2><p class="role">${role.role}</p><p class="period">${role.period}</p><p>${star[1]}</p>`;
+  const previous = $('#experience-previous'), next = $('#experience-next');
+  const focused = document.activeElement;
+  previous.hidden = index === 0;
+  next.hidden = index === role.stars.length - 1;
+  if (focused === previous && previous.hidden && !next.hidden) next.focus();
+  if (focused === next && next.hidden && !previous.hidden) previous.focus();
 }
-$('#experience-next').onclick = () => selectStar((starIndex + 1) % roles[roleIndex].stars.length);
+$('#experience-previous').onclick = () => selectStar(starIndex - 1);
+$('#experience-next').onclick = () => selectStar(starIndex + 1);
 function selectRole(index) {
   roleIndex = index;
   const shape = shapes[index];
