@@ -19,12 +19,14 @@ const shapes = [
   { path:'M78 125 C80 260 185 284 284 222 C314 202 334 217 350 232 C366 217 386 202 416 222 C515 284 620 260 622 125 C647 275 551 358 443 305 C402 286 373 270 350 264 C327 270 298 286 257 305 C149 358 53 275 78 125 Z', points:[[78,125],[190,268],[310,218],[390,218],[510,268],[622,125]], decoration:[[92,226],[135,281],[257,305],[350,264],[443,305],[565,281],[608,226]] },
   { path:'M145 300 L165 300 C165 205 216 144 305 132 L305 105 L395 105 L395 132 C484 144 535 205 535 300 L555 300 L555 335 Q350 365 145 335 Z M305 132 L305 278 M395 132 L395 278 M165 300 Q350 325 535 300 M215 278 C215 220 238 183 270 167 M485 278 C485 220 462 183 430 167', points:[[145,300],[230,164],[350,105],[470,164],[555,335]], decoration:[[165,247],[305,132],[395,132],[535,247],[350,350],[305,278],[395,278]] }
 ];
-let roleIndex = 0;
+let roleIndex = 0, starIndex = 0;
 function selectStar(index) {
+  starIndex = index;
   const role = roles[roleIndex], star = role.stars[index];
   $$('[data-star]').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.star) === index));
-  $('#experience-detail').innerHTML = `<h2>${star[0]}</h2><p class="role">${role.role}</p><p class="period">${role.period}</p><p>${star[1]}</p>`;
+  $('#experience-content').innerHTML = `<h2>${star[0]}</h2><p class="role">${role.role}</p><p class="period">${role.period}</p><p>${star[1]}</p>`;
 }
+$('#experience-next').onclick = () => selectStar((starIndex + 1) % roles[roleIndex].stars.length);
 function selectRole(index) {
   roleIndex = index;
   const shape = shapes[index];
